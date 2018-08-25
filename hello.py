@@ -17,6 +17,7 @@ x_test /= 255
 print(x_train.shape[0], 'train sampels')
 print(x_test.shape[0], 'test samples')
 print('enter to continue...')
+print('-----------------------------------')
 input()
 
 
