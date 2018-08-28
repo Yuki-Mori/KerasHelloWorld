@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 import glob
 
-TARGET_SIZE = (32,32)
+TARGET_SIZE = (64,64)
 batch_size = 32
 epochs = 20
 output_size = 2
@@ -34,7 +34,7 @@ def get_dataset(dirname):
         X.append(array)
         Y.append([0,1])
 
-    for fileanme in tqdm(cat_files):
+    for filename in tqdm(cat_files):
         img = load_img(filename, target_size=TARGET_SIZE)
         array = img_to_array(img) / 255
         X.append(array)
@@ -46,31 +46,36 @@ def create_model():
     model = Sequential()
     model.add(Conv2D(32,(3,3), input_shape=(TARGET_SIZE[0],TARGET_SIZE[1],3)))
     model.add(Activation('relu'))
-    model.add(Conv2D(32, (3,3)))
-    model.add(Activation('relu'))
+    #model.add(Conv2D(32, (3,3)))
+    #model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2,2)))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.25))
 
     model.add(Conv2D(64,(3,3), padding='same'))
     model.add(Activation('relu'))
-    model.add(Conv2D(64,(3,3)))
-    model.add(Activation('relu'))
+    #model.add(Conv2D(64,(3,3)))
+    #model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2,2)))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.25))
 
     model.add(Flatten())
     model.add(Dense(512))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(64))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    #model.add(Dense(64))
+    #model.add(Activation('relu'))
+    #model.add(Dropout(0.5))
     model.add(Dense(output_size))
     model.add(Activation(last_activation))
 
     model.summary()
 
     return model
+
+def img_show(img):
+    from PIL import Image
+    pil_img = Image.fromarray(np.uint8(img))
+    pil_img.show()
 
 def main(traindir='./train', testdir='./test'):
     '''from keras.datasets import cifar10
@@ -87,7 +92,7 @@ def main(traindir='./train', testdir='./test'):
     #x_train, x_test, y_train, y_test = train_test_split(x,y, test_size=0.50)
     model = create_model()
     model.compile(loss='mean_squared_error',
-                  optimizer=keras.optimizers.Adam(lr=1e-5),
+                  optimizer=keras.optimizers.Adam(),
                   metrics=['accuracy'])
 
     es_cb = keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=1, mode='auto')
@@ -99,7 +104,6 @@ def main(traindir='./train', testdir='./test'):
                         validation_data=(x_test, y_test),
                         callbacks=[es_cb])
     score = model.evaluate(x_test, y_test, verbose=0)
-    model.summary()
     print("Test loss: ", score[0])
     print("Test accuracy: ", score[1])
 
