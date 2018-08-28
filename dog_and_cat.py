@@ -14,9 +14,12 @@ from tqdm import tqdm
 
 import glob
 
-TARGET_SIZE = (128, 128)
+TARGET_SIZE = (32,32)
 batch_size = 32
-epochs = 10
+epochs = 20
+output_size = 2
+last_activation = 'sigmoid'
+#last_activation = 'softmax'
 
 def get_dataset(dirname):
     dog_files = glob.glob(dirname+'/dog/*.jpg')
@@ -43,52 +46,60 @@ def create_model():
     model = Sequential()
     model.add(Conv2D(32,(3,3), input_shape=(TARGET_SIZE[0],TARGET_SIZE[1],3)))
     model.add(Activation('relu'))
-    #model.add(Conv2D(32, (3,3)))
-    #model.add(Activation('relu'))
+    model.add(Conv2D(32, (3,3)))
+    model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2,2)))
     model.add(Dropout(0.5))
 
     model.add(Conv2D(64,(3,3), padding='same'))
     model.add(Activation('relu'))
-    #model.add(Conv2D(64,(3,3)))
-    #model.add(Activation('relu'))
+    model.add(Conv2D(64,(3,3)))
+    model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2,2)))
     model.add(Dropout(0.5))
 
     model.add(Flatten())
+    model.add(Dense(512))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
     model.add(Dense(64))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(2))
-    model.add(Activation('softmax'))
+    model.add(Dense(output_size))
+    model.add(Activation(last_activation))
+
+    model.summary()
 
     return model
 
 def main(traindir='./train', testdir='./test'):
-    from keras.datasets import cifar10
+    '''from keras.datasets import cifar10
     (x_train, y_train),(x_test,y_test) = cifar10.load_data()
     x_train=x_train.astype('float32')/255.0
     x_test=x_test.astype('float32')/255.0
-
     y_train=keras.utils.to_categorical(y_train,10)
-    y_test=keras.utils.to_categorical(y_test,10)
-    #x_train, y_train = get_dataset(traindir)
-    #x_test, y_test = get_dataset(testdir)
+    y_test=keras.utils.to_categorical(y_test,10)'''
+
+    x_train, y_train = get_dataset(traindir)
+    x_test, y_test = get_dataset(testdir)
 
     #x,y = get_dataset('../dataset')
     #x_train, x_test, y_train, y_test = train_test_split(x,y, test_size=0.50)
     model = create_model()
-    model.compile(loss='categorical_crossentropy',
+    model.compile(loss='mean_squared_error',
                   optimizer=keras.optimizers.Adam(lr=1e-5),
                   metrics=['accuracy'])
 
+    es_cb = keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=1, mode='auto')
     history = model.fit(x_train, y_train,
                         shuffle = True,
                         batch_size=batch_size,
                         epochs=epochs,
                         verbose=1,
-                        validation_data=(x_test, y_test))
+                        validation_data=(x_test, y_test),
+                        callbacks=[es_cb])
     score = model.evaluate(x_test, y_test, verbose=0)
+    model.summary()
     print("Test loss: ", score[0])
     print("Test accuracy: ", score[1])
 
