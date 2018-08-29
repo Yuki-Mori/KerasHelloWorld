@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 import glob
 
-TARGET_SIZE = (64,64)
+TARGET_SIZE = (32,32)
 batch_size = 32
 epochs = 20
 output_size = 2
@@ -95,7 +95,7 @@ def main(traindir='./train', testdir='./test'):
                   optimizer=keras.optimizers.Adam(),
                   metrics=['accuracy'])
 
-    es_cb = keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=1, mode='auto')
+    es_cb = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='auto')
     history = model.fit(x_train, y_train,
                         shuffle = True,
                         batch_size=batch_size,
