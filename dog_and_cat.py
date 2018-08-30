@@ -13,10 +13,11 @@ from PIL import Image
 from tqdm import tqdm
 
 import glob
+from datetime import datetime
 
 TARGET_SIZE = (32,32)
-batch_size = 32
-epochs = 20
+batch_size = 128
+epochs = 100
 output_size = 2
 last_activation = 'sigmoid'
 #last_activation = 'softmax'
@@ -106,6 +107,10 @@ def main(traindir='./train', testdir='./test'):
     score = model.evaluate(x_test, y_test, verbose=0)
     print("Test loss: ", score[0])
     print("Test accuracy: ", score[1])
+
+    name = datetime.now().strftime("%Y%m%d_%H%M%S.h5")
+    model.save('models/{0}'.format(name))
+    print("Model is saved as {0}".format(name))
 
 
 if __name__ == '__main__':
